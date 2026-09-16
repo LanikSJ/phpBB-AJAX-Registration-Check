@@ -3,8 +3,8 @@
     "type": "phpbb-extension",
     "description": "An extension that checks data on the registration form with AJAX so that no invalid or unwanted data could be typed in",
     "homepage": "https://mundophpbb.com.br",
-    "version": "1.0.5",
-    "time": "2026-08-20",
+    "version": "1.1.1",
+    "time": "2026-09-15",
     "keywords": [
         "ajax",
         "registration",
@@ -21,7 +21,8 @@
         },
         {
             "name": "LanikSJ",
-            "role": "Author"
+            "homepage": "https://github.com/LanikSJ",
+            "role": "Maintainer"
         },
         {
             "name": "MarkusWME",

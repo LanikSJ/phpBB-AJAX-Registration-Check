@@ -98,6 +98,32 @@ pcgf/ajaxregistrationcheck/
 - **Always run markdownlint and fix all issues in markdown files before
   considering changes complete**
 
+### Temp File Cleanup (MANDATORY)
+
+- Keep scratch, probe, and validation files out of the repository
+  working tree; use `/tmp` unless a task genuinely requires files
+  elsewhere (e.g., fixtures consumed by a repo test)
+- Prefix scratch files so they are easy to attribute (e.g., `probe-*.js`)
+- Remove all temp files as the final step of every task (before the
+  completion report), including:
+  - scratch scripts, dumps, and captured output files
+  - temporary tool installs (e.g., a `/tmp/<dir>` with `node_modules`
+    used for PHP syntax validation)
+- Do not delete anything you did not create; leave pre-existing `/tmp`
+  files and system entries (`zeb_def_ipc_*`, `node-compile-cache`,
+  `zsh-fzf-tab-*`, `MozillaUpdateLock-*`) untouched, unless the user
+  explicitly asks for a deeper cleanup
+- Verify both cleanups before reporting completion:
+
+  ```bash
+  find /tmp -maxdepth 1 -newermt '<today> 00:00' -not -path './zeb*'
+  git status --short
+  ```
+
+- Keep the repository working tree free of scratch files; if `git
+  status` shows any, remove them before committing (intentional,
+  reviewable changes aside)
+
 ### Extension Standards
 
 - Maintain compatibility with phpBB 3.3.x and PHP >= 7.1.3
