@@ -57,12 +57,12 @@
     }
 
     function isPasswordValid(value, cfg, matches) {
-        if (value.length < cfg.passwordMin) return false;
-        if (cfg.passwordRule <= 0) return true;
+        if (value.length < cfg.pwdMin) return false;
+        if (cfg.pwdRule <= 0) return true;
         if (!matches.lower || !matches.upper) return false;
-        if (cfg.passwordRule <= 10) return true;
+        if (cfg.pwdRule <= 10) return true;
         if (!matches.number) return false;
-        if (cfg.passwordRule <= 100) return true;
+        if (cfg.pwdRule <= 100) return true;
         return !!matches.symbol;
     }
 
@@ -126,10 +126,13 @@
             symbol: value.match(/[^a-zA-Z0-9]/g)
         };
         if (!isPasswordValid(value, cfg, matches)) {
-            setInvalid(cfg.passwordInvalid, passwordMessage, passwordField);
+            setInvalid(cfg.pwdInvalid, passwordMessage, passwordField);
             return;
         }
-        setValid(cfg.passwordValid, passwordMessage, passwordField);
+        // No success message exists for this field in the extension language files;
+        // mirror the original behavior: clear validity, mark valid, show the meter
+        passwordMessage.removeClass('invalid password-strength').addClass('valid').text('');
+        passwordField.get(0).setCustomValidity('');
         ensureStrengthMeter(cfg, passwordMessage);
         setStrengthIndicator(computeStrength(value, matches, usernameField, emailField), cfg);
     }
@@ -139,9 +142,9 @@
         confirmMessage.insertAfter(confirmField);
         confirmField.on('keyup', function() {
             if ($(this).val() === passwordField.val()) {
-                setValid(cfg.confirmPasswordValid, confirmMessage, $(this));
+                setValid(cfg.pwdConfirmValid, confirmMessage, $(this));
             } else {
-                setInvalid(cfg.confirmPasswordInvalid, confirmMessage, $(this));
+                setInvalid(cfg.pwdConfirmInvalid, confirmMessage, $(this));
             }
         });
         confirmField.trigger('keyup');
