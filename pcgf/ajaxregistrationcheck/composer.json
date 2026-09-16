@@ -2,9 +2,9 @@
     "name": "pcgf/ajaxregistrationcheck",
     "type": "phpbb-extension",
     "description": "An extension that checks data on the registration form with AJAX so that no invalid or unwanted data could be typed in",
-    "homepage": "https://mundophpbb.com.br",
-    "version": "1.1.1",
-    "time": "2026-09-15",
+    "homepage": "https://forums.lanik.us",
+    "version": "1.1.2",
+    "time": "2026-09-16",
     "keywords": [
         "ajax",
         "registration",
