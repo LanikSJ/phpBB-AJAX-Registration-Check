@@ -100,16 +100,19 @@ pcgf/ajaxregistrationcheck/
 
 ### Temp File Cleanup (MANDATORY)
 
-- Create scratch, probe, and validation files in `/tmp` only - never
-  inside the repository working tree
+- Keep scratch, probe, and validation files out of the repository
+  working tree; use `/tmp` unless a task genuinely requires files
+  elsewhere (e.g., fixtures consumed by a repo test)
 - Prefix scratch files so they are easy to attribute (e.g., `probe-*.js`)
-- Remove ALL temp files as the FINAL step of every task, including:
+- Remove all temp files as the final step of every task (before the
+  completion report), including:
   - scratch scripts, dumps, and captured output files
   - temporary tool installs (e.g., a `/tmp/<dir>` with `node_modules`
     used for PHP syntax validation)
-- Never delete anything you did not create: leave pre-existing `/tmp`
+- Do not delete anything you did not create; leave pre-existing `/tmp`
   files and system entries (`zeb_def_ipc_*`, `node-compile-cache`,
-  `zsh-fzf-tab-*`, `MozillaUpdateLock-*`) untouched
+  `zsh-fzf-tab-*`, `MozillaUpdateLock-*`) untouched, unless the user
+  explicitly asks for a deeper cleanup
 - Verify both cleanups before reporting completion:
 
   ```bash
@@ -117,8 +120,9 @@ pcgf/ajaxregistrationcheck/
   git status --short
   ```
 
-- The repository working tree must contain no scratch files; if `git
-  status` shows any, remove them before committing
+- Keep the repository working tree free of scratch files; if `git
+  status` shows any, remove them before committing (intentional,
+  reviewable changes aside)
 
 ### Extension Standards
 

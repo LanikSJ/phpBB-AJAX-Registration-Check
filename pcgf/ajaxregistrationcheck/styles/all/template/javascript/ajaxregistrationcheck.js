@@ -1,4 +1,3 @@
-/* global $, window, document, pcgfAJAXRegistrationCheck */
 (function() {
     'use strict';
 
@@ -9,7 +8,7 @@
         if (rule === 'USERNAME_ALPHA_SPACERS') return /^[a-z0-9\-+_[\] ]+$/i;
         if (rule === 'USERNAME_LETTER_NUM') return /^[\p{L}\p{N}]+$/u;
         if (rule === 'USERNAME_LETTER_NUM_SPACERS') return /^[-+_ [\]\p{L}\p{N}]+$/u;
-        if (rule === 'USERNAME_ASCII') return /^[\x01-\x7F]+$/;
+        if (rule === 'USERNAME_ASCII') return /^[\x20-\x7E]+$/; // printable ASCII (server side is authoritative)
         return /.+/; // USERNAME_CHARS_ANY and unknown keys: permissive (server side is authoritative)
     }
 
