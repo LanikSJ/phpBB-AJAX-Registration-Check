@@ -72,58 +72,69 @@ class listener implements EventSubscriberInterface
     public function assign_register_data()
     {
         // Load language data
+        $this->user->add_lang('ucp');
         $this->user->add_lang_ext('pcgf/ajaxregistrationcheck', array('ajaxregistrationcheck'));
-        $username_rule = $this->config['allow_name_chars'];
-        switch ($username_rule)
-        {
-            case 'USERNAME_CHARS_ANY':
-                $username_rule = "^.+$";
-            break;
-            case 'USERNAME_ALPHA_ONLY':
-                $username_rule = "^[a-zA-Z0-9]+$";
-            break;
-            case 'USERNAME_ALPHA_SPACERS':
-                $username_rule = "^[a-zA-Z0-9 \\-\\+_\\[\\\]]+$";
-            break;
-            case 'USERNAME_LETTER_NUM':
-                $username_rule = "^[a-zA-Z0-9äöüÄÖÜ]+$";
-            break;
-            case 'USERNAME_LETTER_NUM_SPACERS':
-                $username_rule = "^[a-zA-Z0-9äöüÄÖÜ \\-\\+_\\[\\\]]+$";
-            break;
-            case 'USERNAME_ASCII':
-                $username_rule = "^[a-zA-Z0-9 !\\\"#\\$%&'\\(\\)\\*\\+,\\-\\.\\/:;<=>\\?@\\[\\\]\\^_`\\{\\|\\}~]+$";
-            break;
-        }
-        $password_rule = $this->config['pass_complex'];
-        switch ($password_rule)
-        {
-            case 'PASS_TYPE_ANY':
-                $password_rule = 0;
-            break;
-            case 'PASS_TYPE_CASE':
-                $password_rule = 10;
-            break;
-            case 'PASS_TYPE_ALPHA':
-                $password_rule = 100;
-            break;
-            case 'PASS_TYPE_SYMBOL':
-                $password_rule = 1000;
-            break;
-        }
         $this->template->assign_vars(array(
-            'PCGF_AJAXREGISTRATIONCHECK'                             => true,
-            'PCGF_AJAXREGISTRATIONCHECK_USERNAME_MIN'                => $this->config['min_name_chars'],
-            'PCGF_AJAXREGISTRATIONCHECK_USERNAME_MAX'                => $this->config['max_name_chars'],
-            'PCGF_AJAXREGISTRATIONCHECK_USERNAME_RULE'               => $username_rule,
-            'PCGF_AJAXREGISTRATIONCHECK_USERNAME_INVALID_BOUNDARIES' => $this->user->lang($this->config['allow_name_chars'] . '_EXPLAIN', $this->config['min_name_chars'], $this->config['max_name_chars']),
-            'PCGF_AJAXREGISTRATIONCHECK_EMAIL_RULE'                  => str_replace('\\', '\\\\', get_preg_expression('email')),
-            'PCGF_AJAXREGISTRATIONCHECK_PASSWORD_MIN'                => $this->config['min_pass_chars'],
-            'PCGF_AJAXREGISTRATIONCHECK_PASSWORD_MAX'                => $this->config['max_pass_chars'],
-            'PCGF_AJAXREGISTRATIONCHECK_PASSWORD_RULE'               => $password_rule,
-            'PCGF_AJAXREGISTRATIONCHECK_PASSWORD_INVALID_BOUNDARIES' => $this->user->lang($this->config['pass_complex'] . '_EXPLAIN', $this->config['min_pass_chars'], $this->config['max_pass_chars']),
-            'PCGF_AJAXREGISTRATIONCHECK_CHECK_USERNAME_LINK'         => $this->helper->route('pcgf_ajaxregistrationcheck_controller', array('type' => 'username')),
-            'PCGF_AJAXREGISTRATIONCHECK_CHECK_EMAIL_LINK'            => $this->helper->route('pcgf_ajaxregistrationcheck_controller', array('type' => 'email')),
+            'PCGF_AJAXREGISTRATIONCHECK'        => true,
+            // json_encode() with hex flags per project security standards (prevents XSS)
+            'PCGF_AJAXREGISTRATIONCHECK_CONFIG' => $this->get_json_config(),
         ));
+    }
+
+    /**
+     * Build the client side configuration as a JSON encoded string
+     *
+     * @access private
+     * @since  1.1.1
+     *
+     * @return string JSON encoded configuration object
+     */
+    private function get_json_config()
+    {
+        $config = array(
+            'loading'                => $this->user->lang('LOADING') . '...',
+            'usernameMin'            => (int) $this->config['min_name_chars'],
+            'usernameMax'            => (int) $this->config['max_name_chars'],
+            'usernameRule'           => $this->config['allow_name_chars'],
+            'usernameInvalid'        => $this->user->lang($this->config['allow_name_chars'] . '_EXPLAIN', $this->config['min_name_chars'], $this->config['max_name_chars']),
+            'usernameCheckLink'      => $this->helper->route('pcgf_ajaxregistrationcheck_controller', array('type' => 'username')),
+            'emailInvalid'           => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_EMAIL_INVALID'),
+            'emailCheckLink'         => $this->helper->route('pcgf_ajaxregistrationcheck_controller', array('type' => 'email')),
+            'passwordMin'            => (int) $this->config['min_pass_chars'],
+            'passwordRule'           => $this->get_password_rule(),
+            'passwordInvalid'        => $this->user->lang($this->config['pass_complex'] . '_EXPLAIN', $this->config['min_pass_chars'], $this->config['max_pass_chars']),
+            'confirmPasswordValid'   => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_CONFIRM_PASSWORD_OK'),
+            'confirmPasswordInvalid' => $this->user->lang('NEW_PASSWORD_ERROR'),
+            'strengthLabel'          => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_STRENGTH') . $this->user->lang('COLON'),
+            'veryWeak'               => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_VERY_WEAK'),
+            'weak'                   => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_WEAK'),
+            'normal'                 => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_NORMAL'),
+            'strong'                 => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_STRONG'),
+            'veryStrong'             => $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_PASSWORD_VERY_STRONG'),
+        );
+        return json_encode($config, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+    }
+
+    /**
+     * Map the board's password complexity setting to the client side rule level
+     *
+     * @access private
+     * @since  1.1.1
+     *
+     * @return int The password rule level (0: any, 10: mixed case, 100: + number, 1000: + symbol)
+     */
+    private function get_password_rule()
+    {
+        switch ($this->config['pass_complex'])
+        {
+            case 'PASS_TYPE_CASE':
+                return 10;
+            case 'PASS_TYPE_ALPHA':
+                return 100;
+            case 'PASS_TYPE_SYMBOL':
+                return 1000;
+            default:
+                return 0;
+        }
     }
 }

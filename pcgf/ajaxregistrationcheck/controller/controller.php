@@ -13,21 +13,20 @@ use phpbb\event\dispatcher;
 use phpbb\json_response;
 use phpbb\request\request;
 use phpbb\user;
-use rmcgirr83\stopforumspam\event\main_listener;
 
 /** @version 1.0.0 */
 class controller
 {
-    /** @var request $request Request object */
+    /** @var request Request object */
     protected $request;
 
-    /** @var factory $db Database object */
-    protected $db;
+    /** @var factory Database factory object */
+    protected $db_factory;
 
-    /** @var user $user User object */
+    /** @var user User object */
     protected $user;
 
-    /** @var dispatcher $dispatcher phpBB event dispatcher */
+    /** @var dispatcher phpBB event dispatcher */
     protected $dispatcher;
 
     /**
@@ -37,14 +36,14 @@ class controller
      * @since  1.0.0
      *
      * @param request    $request    Request object
-     * @param factory    $db         Database object
+     * @param factory    $db_factory Database factory object
      * @param user       $user       User object
      * @param dispatcher $dispatcher phpBB event dispatcher
      */
-    public function __construct(request $request, factory $db, user $user, dispatcher $dispatcher)
+    public function __construct(request $request, factory $db_factory, user $user, dispatcher $dispatcher)
     {
         $this->request = $request;
-        $this->db = $db;
+        $this->db_factory = $db_factory;
         $this->user = $user;
         $this->dispatcher = $dispatcher;
     }
@@ -66,95 +65,105 @@ class controller
         $response_text = array('INVALID QUERY', $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_INVALID_QUERY'));
         if ($this->request->is_ajax())
         {
-            switch ($type)
+            if ($type === 'username')
             {
-                case 'username':
-                    $username = $this->request->variable('search', '');
-                    if ($username !== '')
-                    {
-                        $username_escaped = $this->db->sql_escape($username);
-                        // Check if the name is already used
-                        $query = 'SELECT username
-                                    FROM ' . USERS_TABLE . "
-                                    WHERE username = '" . $username_escaped . "'";
-                        $result = $this->db->sql_query($query);
-                        if ($this->db->sql_fetchrow($result))
-                        {
-                            $response_text[0] = 'NOT OK';
-                            $response_text[1] = $this->user->lang('USERNAME_TAKEN_USERNAME');
-                        }
-                        $this->db->sql_freeresult($result);
-                        if ($response_text[0] !== 'NOT OK')
-                        {
-                            // Check if the username is blocked by the board admin
-                            $query = 'SELECT disallow_username
-                                        FROM ' . DISALLOW_TABLE;
-                            $result = $this->db->sql_query($query);
-                            while ($disallowed_user = $this->db->sql_fetchrow($result))
-                            {
-                                // Check if the username matches the rule
-                                if (preg_match('/^' . str_replace('%', '.*', $disallowed_user['disallow_username']) . '$/i', $username))
-                                {
-                                    $response_text[0] = 'NOT OK';
-                                    $response_text[1] = $this->user->lang('USERNAME_DISALLOWED_USERNAME');
-                                    break;
-                                }
-                            }
-                            $this->db->sql_freeresult($result);
-                            if ($response_text[0] !== 'NOT OK')
-                            {
-                                // All checks passed - set status to OK
-                                $response_text[0] = 'OK';
-                                $response_text[1] = $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_USERNAME_OK');
-                            }
-                        }
-                    }
-                break;
-                case 'email':
-                    $email = $this->request->variable('search', '');
-                    if ($email !== '')
-                    {
-                        $email_escaped = $this->db->sql_escape($email);
-                        // Check if the email is already used
-                        $query = 'SELECT user_email
-                                    FROM ' . USERS_TABLE . "
-                                    WHERE user_email = '" . $email_escaped . "'";
-                        $result = $this->db->sql_query($query);
-                        if ($this->db->sql_fetchrow($result))
-                        {
-                            $response_text[0] = 'NOT OK';
-                            $response_text[1] = $this->user->lang('EMAIL_TAKEN_EMAIL');
-                        }
-                        $this->db->sql_freeresult($result);
-                        if ($response_text[0] !== 'NOT OK')
-                        {
-                            // Check if the username is blocked by the board admin
-                            $query = 'SELECT ban_email
-                                        FROM ' . BANLIST_TABLE . "
-                                        WHERE ban_email = '" . $email_escaped . "'";
-                            $result = $this->db->sql_query($query);
-                            while ($disallowed_email = $this->db->sql_fetchrow($result))
-                            {
-                                // Check if the username matches the rule
-                                if (preg_match('/^' . str_replace('%', '.*', $disallowed_email['ban_email']) . '$/i', $email))
-                                {
-                                    $response_text[0] = 'NOT OK';
-                                    $response_text[1] = $this->user->lang('EMAIL_BANNED_EMAIL');
-                                    break;
-                                }
-                            }
-                            $this->db->sql_freeresult($result);
-                            if ($response_text[0] !== 'NOT OK')
-                            {
-                                // All checks passed - set status to OK
-                                $response_text[0] = 'OK';
-                                $response_text[1] = $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_EMAIL_OK');
-                            }
-                        }
-                    }
-                break;
+                $response_text = $this->check_username($this->request->variable('search', ''));
+            }
+            else if ($type === 'email')
+            {
+                $response_text = $this->check_email($this->request->variable('search', ''));
             }
         }
         $response->send($response_text);
+    }
+    /**
+     * Check whether a username is taken or disallowed by the board admin
+     *
+     * @access private
+     * @since  1.1.1
+     *
+     * @param string $username The username to check
+     *
+     * @return array Array with the status and the response message
+     */
+    private function check_username($username)
+    {
+        if ($username === '')
+        {
+            return array('INVALID QUERY', $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_INVALID_QUERY'));
+        }
+        // Check if the name is already used (compare the cleaned name like phpBB core does)
+        $clean_username = utf8_clean_string($username);
+        $query = 'SELECT username
+                    FROM ' . USERS_TABLE . "
+                    WHERE username_clean = '" . $this->db_factory->sql_escape($clean_username) . "'";
+        $result = $this->db_factory->sql_query($query);
+        $row = $this->db_factory->sql_fetchrow($result);
+        $this->db_factory->sql_freeresult($result);
+        if ($row)
+        {
+            return array('NOT OK', $this->user->lang('USERNAME_TAKEN_USERNAME'));
+        }
+        // Check if the username is disallowed by the board admin
+        $query = 'SELECT disallow_username
+                    FROM ' . DISALLOW_TABLE;
+        $result = $this->db_factory->sql_query($query);
+        while ($disallowed_user = $this->db_factory->sql_fetchrow($result))
+        {
+            // Check if the username matches the rule (wildcards: % matches anything)
+            $pattern = '/^' . str_replace('%', '.*?', preg_quote($disallowed_user['disallow_username'], '#')) . '$/i';
+            if (preg_match($pattern, $clean_username))
+            {
+                $this->db_factory->sql_freeresult($result);
+                return array('NOT OK', $this->user->lang('USERNAME_DISALLOWED_USERNAME'));
+            }
+        }
+        $this->db_factory->sql_freeresult($result);
+        return array('OK', $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_USERNAME_OK'));
+    }
+    /**
+     * Check whether an email address is taken or banned by the board admin
+     *
+     * @access private
+     * @since  1.1.1
+     *
+     * @param string $email The email address to check
+     *
+     * @return array Array with the status and the response message
+     */
+    private function check_email($email)
+    {
+        if ($email === '')
+        {
+            return array('INVALID QUERY', $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_INVALID_QUERY'));
+        }
+        // Check if the email is already used
+        $query = 'SELECT user_email
+                    FROM ' . USERS_TABLE . "
+                    WHERE user_email = '" . $this->db_factory->sql_escape($email) . "'";
+        $result = $this->db_factory->sql_query($query);
+        $row = $this->db_factory->sql_fetchrow($result);
+        $this->db_factory->sql_freeresult($result);
+        if ($row)
+        {
+            return array('NOT OK', $this->user->lang('EMAIL_TAKEN_EMAIL'));
+        }
+        // Check if the email is banned by the board admin
+        $query = 'SELECT ban_email
+                    FROM ' . BANLIST_TABLE . "
+                    WHERE ban_email = '" . $this->db_factory->sql_escape($email) . "'";
+        $result = $this->db_factory->sql_query($query);
+        while ($banned_email = $this->db_factory->sql_fetchrow($result))
+        {
+            // Check if the email matches the rule (wildcards: % matches anything)
+            $pattern = '/^' . str_replace('%', '.*?', preg_quote($banned_email['ban_email'], '#')) . '$/i';
+            if (preg_match($pattern, $email))
+            {
+                $this->db_factory->sql_freeresult($result);
+                return array('NOT OK', $this->user->lang('EMAIL_BANNED_EMAIL'));
+            }
+        }
+        $this->db_factory->sql_freeresult($result);
+        return array('OK', $this->user->lang('PCGF_AJAXREGISTRATIONCHECK_EMAIL_OK'));
     }
 }
