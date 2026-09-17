@@ -2,8 +2,8 @@
 
 ## Terminology
 
-Acronyms used in this document (AJAX, XSS, POST) are defined at first
-use below and in the [AGENTS.md glossary](AGENTS.md#glossary).
+Acronyms used in this document are expanded at first use below; see also the
+[AGENTS.md glossary](AGENTS.md#glossary) for the full list.
 
 ## Supported Versions
 
