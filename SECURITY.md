@@ -1,18 +1,9 @@
 # Security Policy
 
-## Glossary
+## Terminology
 
-- **AJAX**: Asynchronous JavaScript and XML — technique for exchanging data
-  with the server without reloading the page
-- **XSS**: Cross-Site Scripting — injection of malicious scripts into pages
-  viewed by other users
-- **POST**: HTTP method used to submit data to the server
-- **PHP**: PHP: Hypertext Preprocessor — the server-side scripting language
-  phpBB and this extension are written in
-
-- **ALL / MUST / NEVER / ALWAYS / NOT**: Used per RFC 2119; absolute terms
-  mean "without exception unless a documented, reviewer-approved escape hatch
-  applies"
+Acronyms used in this document (AJAX, XSS, POST) are defined at first
+use below and in the [AGENTS.md glossary](AGENTS.md#glossary).
 
 ## Supported Versions
 
@@ -31,7 +22,8 @@ your findings.
 
 ### How to Report
 
-**Do NOT open a public issue** for security vulnerabilities. Instead, please
+**Do not open a public issue under any circumstances** for security
+vulnerabilities. Instead, please
 report security issues through one of these channels:
 
 1. **GitHub Security Advisories** (Preferred): [Report via
@@ -77,7 +69,7 @@ We ask that you:
 ### Project-Specific Security
 
 This project is a phpBB extension that validates registration form data via
-AJAX. Security considerations include:
+AJAX (Asynchronous JavaScript and XML). Security considerations include:
 
 - **Server-Side Validation is Authoritative**: The AJAX checks are a
   convenience for users. phpBB's own server-side validation remains the
@@ -87,10 +79,12 @@ AJAX. Security considerations include:
 - **SQL Injection Protection**: All database queries use phpBB's
   `sql_escape()` and `utf8_clean_string()` helpers to safely handle user input
   before it is used in queries.
-- **XSS Protection**: All values embedded into inline JavaScript are encoded
+- **Cross-Site Scripting (XSS) Protection**: All values embedded into inline
+  JavaScript are encoded
   with `json_encode()` using `JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT |
   JSON_HEX_AMP` to prevent script injection.
-- **Request Validation**: The AJAX controller only responds to POST requests
+- **Request Validation**: The AJAX controller only responds to HTTP POST
+  (method for submitting data to the server) requests
   that are flagged as AJAX requests, and rejects invalid query types.
 - **Client-Side Checks are UX Only**: Password strength and format checks run
   in the browser are for user feedback only and must not be relied upon for

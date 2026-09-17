@@ -8,18 +8,19 @@ changes that follow existing project patterns, and explain any deviation.
 
 ## Glossary
 
-- **AJAX**: Asynchronous JavaScript and XML — technique for exchanging data
+- **AJAX (Asynchronous JavaScript and XML)**: technique for exchanging data
   with the server without reloading the page
-- **PHP**: PHP: Hypertext Preprocessor — the server-side scripting language
+- **PHP (PHP: Hypertext Preprocessor)**: the server-side scripting language
   phpBB and this extension are written in
-- **GPL**: GNU General Public License, version 2.0 (GPL-2.0) — the project's
+- **GPL (GNU General Public License, version 2.0)**: the project's
   open-source license
-- **XSS**: Cross-Site Scripting — injection of malicious scripts into pages
+- **XSS (Cross-Site Scripting)**: injection of malicious scripts into pages
   viewed by other users
-- **POST**: HTTP method used to submit data to the server
-- **ALL / MUST / NEVER / ALWAYS**: Used per RFC 2119; absolute terms mean
-  "without exception unless a documented, reviewer-approved escape hatch
-  applies"
+- **POST (HTTP POST method)**: HTTP method used to submit data to the server
+- **ALL (every applicable item)**, **MUST (required)**, **NEVER (in no
+  case)**, **ALWAYS (in every case)**: requirement keywords per RFC 2119;
+  absolute terms mean "without exception unless a documented,
+  reviewer-approved escape hatch applies"
 
 ## Tooling
 
@@ -70,9 +71,9 @@ pcgf/ajaxregistrationcheck/
   conventions
 - Use phpBB's service container for dependency injection (request, db, user,
   config, template, helper)
-- Always use phpBB's `sql_escape()` and `utf8_clean_string()` helpers for
-  database queries; exceptions (e.g., parameterized statements through the
-  dbal) must be documented in the PR description
+- Use phpBB's `sql_escape()` and `utf8_clean_string()` helpers for
+  database queries; if a different safeguard is used instead (e.g.,
+  parameterized statements through the dbal), note it in the PR description
 - Encode all values embedded into templates or JavaScript with `json_encode()`
   using `JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP` to
   prevent XSS
@@ -200,8 +201,9 @@ pcgf/ajaxregistrationcheck/
 - **feat**: A new feature
 - **fix**: A bug fix
 - **docs**: Documentation only changes
-- **style**: Code formatting changes that do not affect meaning (white-space,
-  semicolons, quote style, etc)
+- **style**: Code formatting changes that do not affect meaning — for
+  example: white-space adjustments, semicolon changes, or quote-style
+  switches
 - **refactor**: Code change that neither fixes a bug nor adds a feature
 - **perf**: Performance improvement
 - **test**: Adding or correcting tests
@@ -238,8 +240,8 @@ Before completing any change in `.github/`:
 
 ### Documentation standards in .github/
 
-- `.github/CONTRIBUTING.md` must include the following, or must be updated to
-  include them when missing:
+- The `.github/CONTRIBUTING.md` file is expected to cover the following; update
+  it when any item is missing:
   - phpBB extension development environment setup instructions.
   - Testing requirements and procedures.
   - Documentation standards for new features.
@@ -247,12 +249,12 @@ Before completing any change in `.github/`:
 
 ### Automation and CI/CD
 
-- Project workflows must include automated testing stages (unless a stage is
-  explicitly impractical, which must be documented in the workflow file).
-- Code quality checks must be integrated into CI/CD (exceptions must be
-  documented in the workflow file).
-- Release automation must be properly configured (an intentionally manual
-  release process must be documented in `.github/` documentation).
+- Project workflows should include automated testing stages; when a stage is
+  impractical, record the reason in the workflow file.
+- Integrate code quality checks into CI/CD; record any exception in the
+  workflow file.
+- Configure release automation properly; for an intentionally manual release
+  process, keep the documentation in `.github/`.
 
 ### Error Prevention
 
