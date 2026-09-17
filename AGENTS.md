@@ -12,8 +12,9 @@ changes that follow existing project patterns, and explain any deviation.
   with the server without reloading the page
 - **PHP (PHP: Hypertext Preprocessor)**: the server-side scripting language
   phpBB and this extension are written in
-- **GPL (GNU, a recursive acronym for "GNU's Not Unix"; GNU General Public
-  License, version 2.0)**: the project's
+- **GNU (GNU's Not Unix)**: the Free Software Foundation's software project;
+  this extension is distributed under GNU's General Public License
+- **GPL (GNU General Public License, version 2.0)**: the project's
   open-source license
 - **XSS (Cross-Site Scripting)**: injection of malicious scripts into pages
   viewed by other users
