@@ -1,5 +1,19 @@
 # Security Policy
 
+## Glossary
+
+- **AJAX**: Asynchronous JavaScript and XML — technique for exchanging data
+  with the server without reloading the page
+- **XSS**: Cross-Site Scripting — injection of malicious scripts into pages
+  viewed by other users
+- **POST**: HTTP method used to submit data to the server
+- **PHP**: PHP: Hypertext Preprocessor — the server-side scripting language
+  phpBB and this extension are written in
+
+- **ALL / MUST / NEVER / ALWAYS / NOT**: Used per RFC 2119; absolute terms
+  mean "without exception unless a documented, reviewer-approved escape hatch
+  applies"
+
 ## Supported Versions
 
 The following table lists the versions of this project currently supported with
@@ -22,7 +36,9 @@ report security issues through one of these channels:
 
 1. **GitHub Security Advisories** (Preferred): [Report via
    GitHub](https://github.com/LanikSJ/phpBB-AJAX-Registration-Check/security/advisories/new)
-2. **Email**: Send details to [security@lanik.us](mailto:security@lanik.us)
+2. **Email**: Contact the maintainer (`@LanikSJ`) via the email address listed
+   on their GitHub profile for sensitive matters that cannot use the channels
+   above
 3. **Security Discussions**: Open a discussion in our
    [GitHub Discussions](https://github.com/LanikSJ/phpBB-AJAX-Registration-Check/discussions/categories/security)
 
@@ -65,7 +81,9 @@ AJAX. Security considerations include:
 
 - **Server-Side Validation is Authoritative**: The AJAX checks are a
   convenience for users. phpBB's own server-side validation remains the
-  authoritative check and must never be bypassed or weakened by this extension.
+  authoritative check and must not be bypassed or weakened by this extension;
+  any change that touches validation must preserve this guarantee unless the
+  phpBB core behavior itself changes.
 - **SQL Injection Protection**: All database queries use phpBB's
   `sql_escape()` and `utf8_clean_string()` helpers to safely handle user input
   before it is used in queries.
@@ -76,7 +94,8 @@ AJAX. Security considerations include:
   that are flagged as AJAX requests, and rejects invalid query types.
 - **Client-Side Checks are UX Only**: Password strength and format checks run
   in the browser are for user feedback only and must not be relied upon for
-  security enforcement.
+  security enforcement; server-side checks are the sole enforcement point
+  (no exceptions unless phpBB core changes).
 - **No Sensitive Data Exposure**: The extension only checks usernames and
   email addresses for availability and validity; it does not store, log, or
   transmit any sensitive user data.
@@ -86,7 +105,8 @@ AJAX. Security considerations include:
 ### For Users
 
 - **Keep Updated**: Always use the latest version of the extension and keep
-  your phpBB installation up to date
+  your phpBB installation up to date, unless a documented compatibility issue
+  prevents it (in which case pin the version and report the issue)
 - **Verify Sources**: Only download the extension from official sources, such
   as the [phpBB extension database](https://www.phpbb.com/customise/db/extension/ajax_registration_check/)
 - **Report Suspicious Behavior**: If you notice anything unusual, please report
@@ -97,7 +117,8 @@ AJAX. Security considerations include:
 When contributing to the project:
 
 - **Validate Input**: Always use phpBB's request and database helpers to
-  validate and escape user input
+  validate and escape user input, unless an equivalent safeguard (e.g.,
+  prepared statements) is documented in the change
 - **Encode Output**: Ensure any value embedded into templates or JavaScript is
   properly encoded to prevent XSS
 - **Follow Guidelines**: Adhere to the project's contribution guidelines and
@@ -116,7 +137,7 @@ For general security questions or concerns, you can:
 
 - Open a discussion in our
   [GitHub Discussions](https://github.com/LanikSJ/phpBB-AJAX-Registration-Check/discussions)
-- Contact the maintainer (`@LanikSJ`) directly or through the security email
-  above for sensitive matters
+- Contact the maintainer (`@LanikSJ`) directly for sensitive matters, using
+  the contact details on their GitHub profile
 
 Thank you for helping keep phpBB AJAX Registration Check secure!

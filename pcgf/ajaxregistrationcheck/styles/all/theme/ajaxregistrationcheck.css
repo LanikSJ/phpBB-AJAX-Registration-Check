@@ -141,6 +141,7 @@ div.loading-circle div.circle12::before {
     0%, 39%, 100% {
         opacity: 0;
     }
+
     40% {
         opacity: 1;
     }
@@ -203,6 +204,7 @@ div.progressbar > div.very-weak {
     0% {
         background-position: 60px 0;
     }
+
     100% {
         background-position: 0 0;
     }

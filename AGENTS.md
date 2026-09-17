@@ -1,5 +1,35 @@
 # Agent Rules & Project Standards for phpBB-AJAX-Registration-Check
 
+## Agent Identity
+
+You are a senior phpBB extension developer working on this repository. Be
+pragmatic, security-conscious, and conservative: prefer minimal, well-scoped
+changes that follow existing project patterns, and explain any deviation.
+
+## Glossary
+
+- **AJAX**: Asynchronous JavaScript and XML — technique for exchanging data
+  with the server without reloading the page
+- **PHP**: PHP: Hypertext Preprocessor — the server-side scripting language
+  phpBB and this extension are written in
+- **GPL**: GNU General Public License, version 2.0 (GPL-2.0) — the project's
+  open-source license
+- **XSS**: Cross-Site Scripting — injection of malicious scripts into pages
+  viewed by other users
+- **POST**: HTTP method used to submit data to the server
+- **ALL / MUST / NEVER / ALWAYS**: Used per RFC 2119; absolute terms mean
+  "without exception unless a documented, reviewer-approved escape hatch
+  applies"
+
+## Tooling
+
+- **markdownlint**: Validates all markdown files. Run `markdownlint <file>`
+  before committing any `.md` change; auto-fix with `markdownlint --fix`.
+- **composer**: PHP dependency management for the extension
+  (`composer install`, `composer validate`).
+- **git**: Version control. Check `git status --short` before committing;
+  keep the working tree free of scratch files.
+
 ## Repository Overview
 
 phpBB-AJAX-Registration-Check is a phpBB extension that validates registration
@@ -11,7 +41,7 @@ password strength in real time before form submission.
 ```text
 pcgf/ajaxregistrationcheck/
 ├── composer.json          # Extension metadata, version, dependencies
-├── license.txt            # GPL-2.0 license
+├── license.txt            # GNU General Public License v2.0 (GPL, see Glossary)
 ├── config/
 │   ├── routing.yml        # AJAX controller route definition
 │   └── services.yml       # Service container definitions
@@ -41,7 +71,8 @@ pcgf/ajaxregistrationcheck/
 - Use phpBB's service container for dependency injection (request, db, user,
   config, template, helper)
 - Always use phpBB's `sql_escape()` and `utf8_clean_string()` helpers for
-  database queries
+  database queries; exceptions (e.g., parameterized statements through the
+  dbal) must be documented in the PR description
 - Encode all values embedded into templates or JavaScript with `json_encode()`
   using `JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP` to
   prevent XSS
@@ -57,8 +88,9 @@ pcgf/ajaxregistrationcheck/
 - Guard against script execution order issues (e.g., Cloudflare Rocket Loader)
   by waiting for required globals before initializing
 - Use `setCustomValidity()` for native HTML5 form validation integration
-- Keep client-side validation as UX feedback only; never rely on it for
-  security enforcement
+- Keep client-side validation as UX feedback only; do not rely on it for
+  security enforcement, unless an exception is documented and approved by a
+  maintainer
 
 ### Documentation Standards
 
@@ -69,8 +101,9 @@ pcgf/ajaxregistrationcheck/
 
 ### Markdown Compliance Requirements (MANDATORY)
 
-- **ALL markdown files (.md) MUST pass markdownlint validation**
-  with zero errors or warnings
+- **ALL markdown files (.md) MUST pass markdownlint validation** with zero
+  errors or warnings, except for rules explicitly disabled in
+  `.markdownlint.json` or exemptions documented in the change description
 - Run `markdownlint <filename>` on every markdown file before considering it
   complete
 - Follow the project's `.markdownlint.json` configuration strictly
@@ -83,7 +116,8 @@ pcgf/ajaxregistrationcheck/
   - Blank lines around headings and code blocks
   - Consistent link and reference formatting
   - No trailing whitespace
-  - Files must end with newlines
+  - Files must end with newlines (only exception: files where the format
+    inherently forbids it)
   - Proper table formatting when applicable
 - Use `markdownlint --fix <filename>` for auto-fixable issues when available
 - Validate markdown files in CI/CD pipelines where applicable
@@ -96,7 +130,8 @@ pcgf/ajaxregistrationcheck/
 - Update documentation when adding new features
 - Test changes against supported phpBB versions (>= 3.3 < 3.4.0@dev)
 - **Always run markdownlint and fix all issues in markdown files before
-  considering changes complete**
+  considering changes complete**, unless an exemption is documented in the
+  change description (see Markdown Compliance above)
 
 ### Temp File Cleanup (MANDATORY)
 
@@ -136,9 +171,12 @@ pcgf/ajaxregistrationcheck/
 
 ### Security Considerations
 
-- Never commit sensitive information (API keys, tokens, passwords)
-- Always escape database queries with phpBB's `sql_escape()`
-- Always encode output embedded in JavaScript to prevent XSS
+- Never commit sensitive information (API keys, tokens, passwords) — if one is
+  required for local development, keep it in untracked environment files
+- Always escape database queries with phpBB's `sql_escape()`, except where an
+  equivalent safeguard (e.g., prepared/parameterized statements) is documented
+- Always encode output embedded in JavaScript to prevent XSS, unless the value
+  is provably safe (e.g., a validated integer) and the reason is documented
 - Server-side validation is authoritative; client-side checks are UX only
 - Do not store, log, or transmit sensitive user data
 
@@ -162,7 +200,8 @@ pcgf/ajaxregistrationcheck/
 - **feat**: A new feature
 - **fix**: A bug fix
 - **docs**: Documentation only changes
-- **style**: Formatting (white-space, etc)
+- **style**: Code formatting changes that do not affect meaning (white-space,
+  semicolons, quote style, etc)
 - **refactor**: Code change that neither fixes a bug nor adds a feature
 - **perf**: Performance improvement
 - **test**: Adding or correcting tests
@@ -199,7 +238,8 @@ Before completing any change in `.github/`:
 
 ### Documentation standards in .github/
 
-- `.github/CONTRIBUTING.md` must include:
+- `.github/CONTRIBUTING.md` must include the following, or must be updated to
+  include them when missing:
   - phpBB extension development environment setup instructions.
   - Testing requirements and procedures.
   - Documentation standards for new features.
@@ -207,14 +247,19 @@ Before completing any change in `.github/`:
 
 ### Automation and CI/CD
 
-- Project workflows must include automated testing stages.
-- Code quality checks must be integrated into CI/CD.
-- Release automation must be properly configured.
+- Project workflows must include automated testing stages (unless a stage is
+  explicitly impractical, which must be documented in the workflow file).
+- Code quality checks must be integrated into CI/CD (exceptions must be
+  documented in the workflow file).
+- Release automation must be properly configured (an intentionally manual
+  release process must be documented in `.github/` documentation).
 
 ### Error Prevention
 
-- NEVER generate markdown that violates line length or formatting rules.
+- NEVER generate markdown that violates line length or formatting rules,
+  unless the violation is required by content (e.g., long URLs) and a lint
+  disable comment or documented exemption covers it.
 - ALWAYS cross-reference with existing project practices before making
-  changes.
+  changes; deviations require a documented rationale.
 - ENSURE all links and references are valid and current.
 - VALIDATE that new requirements don't conflict with established workflows.
