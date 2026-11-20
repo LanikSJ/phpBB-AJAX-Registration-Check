@@ -70,3 +70,13 @@ suggest, please submit a pull request.
 If you like the extension feel free to [Donate with PayPal](https://www.paypal.com/donate/?business=ARJNJE9TBTPH4&no_recurring=0&currency_code=USD).
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?business=ARJNJE9TBTPH4&no_recurring=0&currency_code=USD)
+
+
+## ⚙️ Skills Automation
+
+This repository maintains agent skills via `skills-lock.json`. The GitHub Actions
+workflow automatically updates the skills monthly and creates a pull request.
+
+- **Workflow**: `.github/workflows/skills-update.yml`
+- **Schedule**: Monthly on the 6th at 03:00 UTC
+- **Manual run**: `npx skills update`
