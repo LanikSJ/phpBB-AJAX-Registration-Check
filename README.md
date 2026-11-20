@@ -71,7 +71,6 @@ If you like the extension feel free to [Donate with PayPal](https://www.paypal.c
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?business=ARJNJE9TBTPH4&no_recurring=0&currency_code=USD)
 
-
 ## ⚙️ Skills Automation
 
 This repository maintains agent skills via `skills-lock.json`. The GitHub Actions
